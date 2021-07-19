@@ -9,23 +9,23 @@ import UIKit
 
 class ToDoTableViewController: UITableViewController {
     
-    var listOfToDo : [ToDoClass] = []
+    var listOfToDo : [ToDoCD] = []
     
-    func createToDo() -> [ToDoClass] {
-        let ashPrincessToDo = ToDoClass()
-        ashPrincessToDo.description = "Ash Princess"
-        ashPrincessToDo.important = true
-        
-        let scytheToDo = ToDoClass()
-        scytheToDo.description = "Scythe"
-        
-        return [ashPrincessToDo, scytheToDo]
+    func getToDos() {
+         if let accessToCoreData = (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext {
+
+         if let dataFromCoreData = try? accessToCoreData.fetch(ToDoCD.fetchRequest()) as? [ToDoCD] {
+              listOfToDo = dataFromCoreData
+              tableView.reloadData()
+              }
+         }
     }
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        listOfToDo = createToDo()
+       
     }
 
     // MARK: - Table view data source
@@ -37,22 +37,31 @@ class ToDoTableViewController: UITableViewController {
 
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
+      let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
 
-        // Configure the cell...
-        let eachToDo = listOfToDo[indexPath.row]
-        if eachToDo.important {
-            cell.textLabel?.text = "❗️" + eachToDo.description
-        } else {
-            cell.textLabel?.text = eachToDo.description
-        }
-        return cell
+         let eachToDo = listOfToDo[indexPath.row]
+
+         if let thereIsDescription = eachToDo.descriptionInCD {
+              if eachToDo.importantInCD {
+            cell.textLabel?.text = "❗️" + thereIsDescription
+             } else {
+            cell.textLabel?.text = eachToDo.descriptionInCD
+             }
+         }
+
+         return cell
     }
+
     
     override func tableView (_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
         let eachToDo = listOfToDo[indexPath.row]
         performSegue(withIdentifier: "moveToCompletedToDoVC", sender: eachToDo)
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+         getToDos()
+    }
+
 
     
     // MARK: - Navigation
@@ -65,7 +74,7 @@ class ToDoTableViewController: UITableViewController {
       }
 
       if let completeVC = segue.destination as? CompletedToDoViewController {
-        if let toDo = sender as? ToDoClass {
+        if let toDo = sender as? ToDoCD {
             completeVC.selectedToDo = toDo
           completeVC.previousToDoTVC = self
         }

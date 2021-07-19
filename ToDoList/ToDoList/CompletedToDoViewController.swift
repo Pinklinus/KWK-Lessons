@@ -10,15 +10,22 @@ import UIKit
 class CompletedToDoViewController: UIViewController {
     @IBOutlet weak var toDoDisplay: UILabel!
     var previousToDoTVC = ToDoTableViewController()
-    var selectedToDo = ToDoClass()
+    var selectedToDo : ToDoCD?
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        toDoDisplay.text = selectedToDo.description
+        toDoDisplay.text = selectedToDo?.descriptionInCD
 
         // Do any additional setup after loading the view.
     }
     
     @IBAction func completeTapped(_ sender: UIButton) {
+        if let context = (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext {
+            if let theToDo = selectedToDo {
+              context.delete(theToDo)
+              navigationController?.popViewController(animated: true)
+            }
+          }
     }
     
     
